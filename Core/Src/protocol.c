@@ -80,6 +80,7 @@ const DOWNLOAD_CMD_S download_cmd[] =
   {DPID_SWITCH_LED, DP_TYPE_BOOL},
   {DPID_WORK_MODE, DP_TYPE_ENUM},
   {DPID_BRIGHT_VALUE, DP_TYPE_VALUE},
+  {DPID_TEMP_VALUE, DP_TYPE_VALUE},
   {DPID_COLOUR_DATA, DP_TYPE_STRING},
   {DPID_MUSIC_DATA, DP_TYPE_STRING},
 };
@@ -87,11 +88,12 @@ const DOWNLOAD_CMD_S download_cmd[] =
 light_control user_light_control = {
     .light_sw = 0,
     .light_flag = 0,
-    .light_mode = 1,
+    .light_mode = 0,
     .light_bright = 5,
+    .light_temp   = 100,
     .light_uptime = 0,
-    .new_color_rgb = {128,0,0},
-    .music_color_rgb = {128,0,0},
+    .new_color_rgb = {0,0,0},
+    .music_color_rgb = {0,0,0},
 };
 
 /******************************************************************************
@@ -226,6 +228,7 @@ void Light_Updata_Loop(void)
 {
     static uint32_t grb = 0x000000;
     static uint32_t index = 1;
+    uint8_t r, g, b;
 
     if(user_light_control.light_uptime >= 5)
     {
@@ -240,43 +243,47 @@ void Light_Updata_Loop(void)
             switch(user_light_control.light_mode)
             {
             case 0: {
-            grb = WS2812_GRB(user_light_control.light_bright * 255U / 100, \
-                             user_light_control.light_bright * 255U / 100, \
-                             user_light_control.light_bright * 255U / 100);   
+            HSVtoRGB(&r, &g, &b, 40, \
+                     user_light_control.light_temp, \
+                     user_light_control.light_bright);
+
+            grb = WS2812_GRB(g, r, b);   
                        
             }break;
             
             case 1: {
             grb = WS2812_GRB(user_light_control.new_color_rgb[1], \
-                         user_light_control.new_color_rgb[0], \
-                         user_light_control.new_color_rgb[2]);       
+                             user_light_control.new_color_rgb[0], \
+                             user_light_control.new_color_rgb[2]);       
             }break;
             
             case 2: {
             grb = WS2812_GRB(user_light_control.music_color_rgb[1], \
-                         user_light_control.music_color_rgb[0], \
-                         user_light_control.music_color_rgb[2]);
+                             user_light_control.music_color_rgb[0], \
+                             user_light_control.music_color_rgb[2]);
 
             }break;
             
             default:{
-            grb = WS2812_GRB(user_light_control.light_bright * 255U / 100, \
-                             user_light_control.light_bright * 255U / 100, \
-                             user_light_control.light_bright * 255U / 100);
+            HSVtoRGB(&r, &g, &b, 40, \
+                     user_light_control.light_temp, \
+                     user_light_control.light_bright);
+
+            grb = WS2812_GRB(g, r, b);
             }break;                
             }
         }
         else
         {
-            if(user_light_control.light_mode != 0)
-            {
-                grb = 0x000000;
-            }
-            else if(user_light_control.light_mode == 2)
+            if(user_light_control.light_mode == 2)
             {
                 grb = WS2812_GRB(user_light_control.music_color_rgb[1], \
-                         user_light_control.music_color_rgb[0], \
-                         user_light_control.music_color_rgb[2]);
+                                 user_light_control.music_color_rgb[0], \
+                                 user_light_control.music_color_rgb[2]);
+            }
+            else
+            {
+                grb = 0x000000;
             }
         }
         user_light_control.light_flag = 0;
@@ -332,6 +339,7 @@ void all_data_update(void)
     mcu_dp_bool_update(DPID_SWITCH_LED,user_light_control.light_sw); //BOOL型数据上报;
     mcu_dp_enum_update(DPID_WORK_MODE,user_light_control.light_mode); //枚举型数据上报;
     mcu_dp_value_update(DPID_BRIGHT_VALUE,user_light_control.light_bright * 10); //VALUE型数据上报;
+    mcu_dp_value_update(DPID_TEMP_VALUE,(100 - user_light_control.light_temp) * 10);
     mcu_dp_string_update(DPID_COLOUR_DATA,value,12); //STRING型数据上报;
 
 }
@@ -362,8 +370,16 @@ static unsigned char dp_download_switch_led_handle(const unsigned char value[], 
          user_light_control.light_sw = 0;
     }else {
          user_light_control.light_sw = 1;
+        if(user_light_control.light_mode == 0)
+        {
+            HSVtoRGB(&user_light_control.new_color_rgb[0], \
+                     &user_light_control.new_color_rgb[1], \
+                     &user_light_control.new_color_rgb[2], \
+                     35, user_light_control.light_temp, \
+                     user_light_control.light_bright);
+        }
     }
-    user_light_control.light_flag = 1; 
+    user_light_control.light_flag = 1;
     //处理完DP数据后应有反馈
     ret = mcu_dp_bool_update(DPID_SWITCH_LED,switch_led);
     if(ret == SUCCESS)
@@ -427,10 +443,48 @@ static unsigned char dp_download_bright_value_handle(const unsigned char value[]
     //VALUE类型数据处理
     
     */
+    printf("bright_value:%d\r\n",(uint32_t)bright_value);
     user_light_control.light_bright = bright_value / 10;
-    user_light_control.light_flag = 1;
+    if(user_light_control.light_mode == 0)
+    {        
+        user_light_control.light_flag = 1;
+    }
     //处理完DP数据后应有反馈
     ret = mcu_dp_value_update(DPID_BRIGHT_VALUE,bright_value);
+    if(ret == SUCCESS)
+        return SUCCESS;
+    else
+        return ERROR;
+}
+
+/*****************************************************************************
+函数名称 : dp_download_bright_value_handle
+功能描述 : 针对DPID_BRIGHT_VALUE的处理函数
+输入参数 : value:数据源数据
+        : length:数据长度
+返回参数 : 成功返回:SUCCESS/失败返回:ERROR
+使用说明 : 可下发可上报类型,需要在处理完数据后上报处理结果至app
+*****************************************************************************/
+static unsigned char dp_download_temp_value_handle(const unsigned char value[], unsigned short length)
+{
+    //示例:当前DP类型为VALUE
+    unsigned char ret;
+    unsigned long temp_value;
+    
+    temp_value = mcu_get_dp_download_value(value,length);
+    /*
+    //VALUE类型数据处理
+    
+    */
+    printf("temp_value:%d\r\n",(uint32_t)temp_value);
+    user_light_control.light_temp = 100 - (temp_value / 10);
+    if(user_light_control.light_mode == 0)
+    {       
+        user_light_control.light_flag = 1;
+    }
+    
+    //处理完DP数据后应有反馈
+    ret = mcu_dp_value_update(DPID_TEMP_VALUE,temp_value);
     if(ret == SUCCESS)
         return SUCCESS;
     else
@@ -481,7 +535,7 @@ static unsigned char dp_download_music_data_handle(const unsigned char value[], 
     }
 
     //处理完DP数据后应有反馈
-    ret = mcu_dp_string_update(DPID_MUSIC_DATA,value, length);
+    ret = mcu_dp_string_update(DPID_MUSIC_DATA, value, length);
     if(ret == SUCCESS)
         return SUCCESS;
     else
@@ -526,6 +580,10 @@ unsigned char dp_download_handle(unsigned char dpid,const unsigned char value[],
         case DPID_BRIGHT_VALUE:
             //白光亮度处理函数
             ret = dp_download_bright_value_handle(value,length);
+        break;
+        case DPID_TEMP_VALUE:
+            //白光亮度处理函数
+            ret = dp_download_temp_value_handle(value,length);
         break;
         case DPID_COLOUR_DATA:
             //彩光处理函数

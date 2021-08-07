@@ -266,6 +266,10 @@ BLE_test_result内部有#err提示,完成函数后请删除该#err
 //白光亮度(可下发可上报)
 //备注:
 #define DPID_BRIGHT_VALUE 22
+
+//冷暖值(可下发可上报)
+//备注:
+#define DPID_TEMP_VALUE 23
 //彩光(可下发可上报)
 //备注:类型：字符串;
 //Value: 000011112222;
