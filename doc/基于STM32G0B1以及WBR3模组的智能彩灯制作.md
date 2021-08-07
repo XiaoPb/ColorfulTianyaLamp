@@ -445,7 +445,7 @@ void Light_Updata_Loop(void)// main 循环内调用
 
 ### 使用涂鸦智能`app`对产品进行测试
 
-测试视频在[doc](./)目录下，下方是转成`GIF`图片的测试视频效果。
+测试视频在[基于STM32G0B1以及WBR3模组的智能彩灯制作.assets](./基于STM32G0B1以及WBR3模组的智能彩灯制作.assets)目录下，下方是转成`GIF`图片的测试视频效果。
 
 ![灯光控制](基于STM32G0B1以及WBR3模组的智能彩灯制作.assets/灯光控制.gif)
 
