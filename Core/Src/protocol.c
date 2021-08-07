@@ -232,8 +232,6 @@ void Light_Updata_Loop(void)
 
     if(user_light_control.light_uptime >= 5)
     {
-        user_light_control.light_uptime = 0;
-
         if(user_light_control.light_flag == 0)
         {
             return;
@@ -299,7 +297,7 @@ void Light_Updata_Loop(void)
         {
             user_ws2812_control7.ws2812_color_updata_all(grb,&user_ws2812_control7);
         }
-
+        user_light_control.light_uptime = 0;
         user_ws2812_control7.ws2812_updata(&user_ws2812_control7);
     }
 }

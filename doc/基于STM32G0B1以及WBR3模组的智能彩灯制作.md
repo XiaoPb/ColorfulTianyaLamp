@@ -1,8 +1,8 @@
 # 炫彩天涯灯
 
+**作者： `XiaoPb`**
+
 ***基于`MCU + WBR3`模组的智能彩灯制作***
-
-
 
 ## 前期准备
 
@@ -16,7 +16,7 @@
 
 - 准备一个`WS2812`彩灯模组，灯的数量自行选择。
 
-  ![WS2812彩灯模组](基于STM32G0B1以及WBR3模组的智能彩灯制作.assets/XNTKJMP1TW{1TX%U{OWL9.png)
+  ![WS2812彩灯模组](基于STM32G0B1以及WBR3模组的智能彩灯制作.assets/WS2812.png)
 
   
 
@@ -235,6 +235,7 @@ void tim_5ms_call(void)
       unsigned char light_flag   :2;
       unsigned char light_mode   :4;
       unsigned char light_bright;
+      unsigned char light_temp;
       unsigned char light_uptime;
       unsigned char new_color_rgb[3];
       unsigned char music_color_rgb[3];
@@ -366,11 +367,10 @@ void Light_Updata_Loop(void)// main 循环内调用
 {
     static uint32_t grb = 0x000000;
     static uint32_t index = 1;
+    uint8_t r, g, b;
 
     if(user_light_control.light_uptime >= 5)
     {
-        user_light_control.light_uptime = 0;
-
         if(user_light_control.light_flag == 0)
         {
             return;
@@ -380,9 +380,11 @@ void Light_Updata_Loop(void)// main 循环内调用
             switch(user_light_control.light_mode)
             {
             case 0: {
-            grb = WS2812_GRB(user_light_control.light_bright * 255U / 100, \
-                             user_light_control.light_bright * 255U / 100, \
-                             user_light_control.light_bright * 255U / 100);   
+            HSVtoRGB(&r, &g, &b, 40, \
+                     user_light_control.light_temp, \
+                     user_light_control.light_bright);
+
+            grb = WS2812_GRB(g, r, b);   
                        
             }break;
             
@@ -400,23 +402,25 @@ void Light_Updata_Loop(void)// main 循环内调用
             }break;
             
             default:{
-            grb = WS2812_GRB(user_light_control.light_bright * 255U / 100, \
-                             user_light_control.light_bright * 255U / 100, \
-                             user_light_control.light_bright * 255U / 100);
+            HSVtoRGB(&r, &g, &b, 40, \
+                     user_light_control.light_temp, \
+                     user_light_control.light_bright);
+
+            grb = WS2812_GRB(g, r, b);
             }break;                
             }
         }
         else
         {
-            if(user_light_control.light_mode != 0)
-            {
-                grb = 0x000000;
-            }
-            else if(user_light_control.light_mode == 2)
+            if(user_light_control.light_mode == 2)
             {
                 grb = WS2812_GRB(user_light_control.music_color_rgb[1], \
                                  user_light_control.music_color_rgb[0], \
                                  user_light_control.music_color_rgb[2]);
+            }
+            else
+            {
+                grb = 0x000000;
             }
         }
         user_light_control.light_flag = 0;
@@ -427,13 +431,13 @@ void Light_Updata_Loop(void)// main 循环内调用
                 index = 1;
             }
             user_ws2812_control7.ws2812_color_updata_index \
-                				(grb, index++, &user_ws2812_control7);
+                						(grb,index++,&user_ws2812_control7);
         }
         else
         {
             user_ws2812_control7.ws2812_color_updata_all(grb,&user_ws2812_control7);
         }
-
+        user_light_control.light_uptime = 0;
         user_ws2812_control7.ws2812_updata(&user_ws2812_control7);
     }
 }

@@ -151,6 +151,7 @@ typedef struct _light_control{
     unsigned char light_flag   :2;
     unsigned char light_mode   :4;
     unsigned char light_bright;
+    unsigned char light_temp;
     unsigned char light_uptime;
     unsigned char new_color_rgb[3];
     unsigned char music_color_rgb[3];
