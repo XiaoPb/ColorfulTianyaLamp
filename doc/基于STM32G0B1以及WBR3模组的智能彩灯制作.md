@@ -174,19 +174,22 @@ void tim_5ms_call(void)
   
   static unsigned char dp_download_bright_value_handle(const unsigned char value[], unsigned short length);
   
+  static unsigned char dp_download_temp_value_handle(const unsigned char value[], unsigned short length);
+  
   static unsigned char dp_download_colour_data_handle(const unsigned char value[], unsigned short length);
   
   static unsigned char dp_download_music_data_handle(const unsigned char value[], unsigned short length);
   
   void all_data_update(void)；
   ```
-
+  
   - 第一个函数是接收`APP`上下发的灯开关状态值。
   - 第二个函数是接收`APP`上下发的模式枚举值。
   - 第三个函数是接收`APP`上下发的白灯模式下灯亮度数值。
-  - 第四个函数是接收`APP`上下发的彩灯模式下灯颜色`HSV`值。
-  - 第五个函数是接收`APP`上下发的音乐模式下灯颜色`HSV`值。
-  - 第六个函数是用户自发上传灯实际状态数据函数，根据自己实际需求进行添加修改。
+  - 第四个函数是接收`APP`上下发的白灯模式下灯色温数值。
+  - 第五个函数是接收`APP`上下发的彩灯模式下灯颜色`HSV`值。
+  - 第六个函数是接收`APP`上下发的音乐模式下灯颜色`HSV`值。
+  - 第七个函数是用户自发上传灯实际状态数据函数，根据自己实际需求进行添加修改。
   - 用户只需要在里面添加处理逻辑代码即可快速完成开发，需要删除或者注释掉 `#error ....` ，否则编译不通过。
 
 彩灯模式下发数据格式：
@@ -197,13 +200,10 @@ void tim_5ms_call(void)
 > **1111：S (饱和：0-1000， 0X0000-0X03E8)**
 > **2222：V (明度：0-1000，0X0000-0X03E8)**
 >
-> 示例：`{“24”:“00DC004B004E”}`
->
-> HSV (H，S，V): (HEX)(00DC， 004B，004E)，转换为(DEC)为(220°，75%，78%)；
->
-> 可以获得RGB (R，G，B): (HEX)(32，64，C8)，(DEC)(50，100，200)。
->
-> 备注：颜色按照HSV体系传输，也可以通过算法转换为RGB颜色体系[参考网址](https://www.rapidtables.com/convert/color/index.html)	
+> > 示例：`{“24”:“00DC004B004E”}`
+> > HSV (H，S，V): (HEX)(00DC， 004B，004E)，转换为(DEC)为(220°，75%，78%)；
+> > 可以获得RGB (R，G，B): (HEX)(32，64，C8)，(DEC)(50，100，200)。
+> > 备注：颜色按照HSV体系传输，也可以通过算法转换为RGB颜色体系[参考网址](https://www.rapidtables.com/convert/color/index.html)	
 
 音乐律动下发数据格式：
 
@@ -447,21 +447,25 @@ void Light_Updata_Loop(void)// main 循环内调用
 
 测试视频在[基于STM32G0B1以及WBR3模组的智能彩灯制作.assets](./基于STM32G0B1以及WBR3模组的智能彩灯制作.assets)目录下，下方是转成`GIF`图片的测试视频效果。
 
-![灯光控制](基于STM32G0B1以及WBR3模组的智能彩灯制作.assets/灯光控制.gif)
 
-![灯光云控](基于STM32G0B1以及WBR3模组的智能彩灯制作.assets/灯光云控.gif)
+[![NetFlix on UWP](基于STM32G0B1以及WBR3模组的智能彩灯制作.assets/灯光控制.gif)](基于STM32G0B1以及WBR3模组的智能彩灯制作.assets/灯光控制.mp4)
 
-![音乐律动](基于STM32G0B1以及WBR3模组的智能彩灯制作.assets/音乐律动.gif)
+[![NetFlix on UWP](基于STM32G0B1以及WBR3模组的智能彩灯制作.assets/灯光云控.gif)](基于STM32G0B1以及WBR3模组的智能彩灯制作.assets/灯光云控.mp4)
 
-<video src="基于STM32G0B1以及WBR3模组的智能彩灯制作.assets/灯光控制.mp4"></video>
+[![NetFlix on UWP](基于STM32G0B1以及WBR3模组的智能彩灯制作.assets/音乐律动.gif)](基于STM32G0B1以及WBR3模组的智能彩灯制作.assets/音乐律动.mp4)
 
-<video src="基于STM32G0B1以及WBR3模组的智能彩灯制作.assets/灯光云控.mp4"></video>
-
-<video src="基于STM32G0B1以及WBR3模组的智能彩灯制作.assets/音乐律动.mp4"></video>
 
 ## 完美收工
 
-![img](https://xiaopb.gitee.io/medias/logo.png)
+![img](基于STM32G0B1以及WBR3模组的智能彩灯制作.assets/22A14EDDAE5DA3B6B6D9AF6FF7D377A6.jpg)
+
+![img](基于STM32G0B1以及WBR3模组的智能彩灯制作.assets/457171E9B78BAF70161AEE073329032C.jpg)
+
+![img](基于STM32G0B1以及WBR3模组的智能彩灯制作.assets/F6D701BA065694DB6AB8017AEB7F0AD6.jpg)
+
+![img](基于STM32G0B1以及WBR3模组的智能彩灯制作.assets/63FE34CD266C20B4EC6474504BC67DE4.jpg)
+
+![img](基于STM32G0B1以及WBR3模组的智能彩灯制作.assets/logo.png)
 
 
 

@@ -245,7 +245,7 @@ void Light_Updata_Loop(void)
                      user_light_control.light_temp, \
                      user_light_control.light_bright);
 
-            grb = WS2812_GRB(g, r, b);   
+            grb = WS2812_GRB(g, r, b);
                        
             }break;
             
@@ -334,6 +334,7 @@ void all_data_update(void)
     uint16_t h,s,v;
     RGBtoHSV(&h,&s,&v,user_light_control.new_color_rgb[0],user_light_control.new_color_rgb[1],user_light_control.new_color_rgb[2]);
     sprintf((char*)value,"%04x%04x%04x",h,s,v);
+    
     mcu_dp_bool_update(DPID_SWITCH_LED,user_light_control.light_sw); //BOOL型数据上报;
     mcu_dp_enum_update(DPID_WORK_MODE,user_light_control.light_mode); //枚举型数据上报;
     mcu_dp_value_update(DPID_BRIGHT_VALUE,user_light_control.light_bright * 10); //VALUE型数据上报;
